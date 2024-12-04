@@ -3,89 +3,61 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
-	ical "github.com/arran4/golang-ical"
-	yaclient "github.com/e0m-ru/yacaldav/client"
-	config "github.com/e0m-ru/yacaldav/conf"
-	"github.com/emersion/go-webdav/caldav"
-	// "github.com/emersion/go-webdav/caldav"
+	"github.com/e0m-ru/yacaldav/client"
+	"github.com/e0m-ru/yacaldav/config"
+	"github.com/e0m-ru/yacaldav/logger"
 )
 
+var L *logger.Logger
+
+func init() {
+	L, _ = logger.NewLogger(logger.DEBUG, "")
+}
 func main() {
-	ctx := context.Background()
-	client := yaclient.NewClient()
-	fmt.Printf("%v\n", client)
-	s, err := client.Create(ctx, "")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%v\n", s)
+	C := config.New()
+	// crete empty content
+	var ctx = context.Background()
+	// add timeout to context default 1000
+	ctx, _ = context.WithTimeout(ctx, C.Net.Timeout)
 
-	// cal, err := readIcsFromFile("zqp2XHMuyandex.ru.ics")
-	// if err != nil {
-	// 	panic(err)
+	// create new CalDAV client
+	cc, err := client.NewClient()
+	L.Error(err)
+
+	// find Prinxipal string
+	// /principals/users/e0m.ru@ya.ru/
+	P, err := cc.FindCurrentUserPrincipal(ctx)
+	L.Error(err)
+	fmt.Printf("Principal: %q\n", P)
+
+	// find HomeSet
+	// /calendars/e0m.ru@ya.ru/
+	HS, err := cc.FindCalendarHomeSet(ctx, P)
+	L.Error(err)
+	fmt.Printf("HomeSet: %q\n", HS)
+
+	// get calendars
+	calSet, err := cc.FindCalendars(ctx, HS)
+	L.Error(err)
+	// print calendars
+	for i, c := range calSet {
+		fmt.Printf("%02v:%-6v %v %q\n", i, c.SupportedComponentSet, c.Path, c.Name)
+	}
+
+	// file info
+	fi, err := cc.Stat(ctx, "calendars/e0m.ru@ya.ru/events-12404324/")
+	L.Error(err)
+	fmt.Printf("%#v\n", fi)
+
+	// a, err := client.GetCalendarObject(ctx, "calendars/e0m.ru@ya.ru/events-12404324/7jjadJP3yandex.ru.ics")
+	// L.Error(err)
+
+	// fmt.Printf("%v\n", a.ContentLength)
+	// x := a.Data.Events()
+	// fmt.Printf("%v\n", x[0].Component.Props.Get("SUMMARY").Value)
+	// fmt.Printf("%s\n", x[0].Component.Props.Get("DESCRIPTION").Value)
+	// for i, p := range x[0].Component.Props {
+	// 	fmt.Printf("%15s: %v\n", i, p)
 	// }
-	// for _, c := range cal.Events() {
-	// 	fmt.Printf("%v\n", c.Id())
-	// 	for i, e := range c.Properties {
-	// 		fmt.Printf("% 2v: %-11v %-10v %v\n", i, e.IANAToken, e.GetValueType(), e.Value)
-	// 	}
-	// }
-	// var _ ical.ComponentBase
-
-	// var x ical.VEvent
-
-	// ctx := context.Background()
-	// calClient := client.NewClient()
-
-	// printCalendars(ctx, calClient)
-
-	// curl -X PROPFIND -u USERNAME:PASSWORD https://caldav.fastmail.com/dav/principals/user/USERNAME
-	// aaa, err := calClient.FindCalendars(ctx, "/calendars/e0m.ru@ya.ru/")
-
-	// aa, err := calClient.Create(ctx, "ASSA")
-	// _, err = aa.Write([]byte("ASSA"))
-	// aa.Close()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// homeSet, err := calClient.GetCalendarObject(ctx, "/calendars/e0m.ru@yandex.ru/events-12404324/zqp2XHMuyandex.ru.ics")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Println(homeSet)
-}
-
-// ls calendars
-func printCalendars(ctx context.Context, calClient *caldav.Client) {
-	cfg := config.New()
-	fi, err := calClient.FindCalendars(ctx, "/calendars/events-12404324/"+cfg.YaAuth.YAUSER)
-	if err != nil {
-		panic(err)
-	}
-	for i, cal := range fi {
-		if cal.SupportedComponentSet[0] != "VEVENT" {
-			continue
-		}
-		fmt.Printf("%3d: %-31s %#v\n", i, cal.Name, cal.Path)
-		x, err := calClient.GetCalendarObject(ctx, cal.Path)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("%v\n", x)
-	}
-}
-
-func readIcsFromFile(fileName string) (cal *ical.Calendar, err error) {
-	f, err := os.OpenFile(fileName, os.O_RDONLY, 0444)
-	defer f.Close()
-	if err != nil {
-		return
-	}
-	cal, err = ical.ParseCalendar(f)
-	if err != nil {
-		return
-	}
-	return
 }

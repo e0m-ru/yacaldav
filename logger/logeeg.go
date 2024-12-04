@@ -56,7 +56,9 @@ func (l *Logger) Warn(msg string) {
 }
 
 // Метод для логирования ошибок
-func (l *Logger) Error(msg string) {
-	l.logger.Printf("ERROR: %s\n", msg)
-	panic(msg)
+func (l *Logger) Error(err error) {
+	if err != nil {
+		// l.logger.Printf("ERROR: %s\n", err)
+		panic(err)
+	}
 }

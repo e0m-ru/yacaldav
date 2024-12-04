@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -12,8 +13,12 @@ type yacaldavConfig struct {
 	YACAL  string
 }
 
+type net struct {
+	Timeout time.Duration
+}
 type Config struct {
 	YaAuth yacaldavConfig
+	Net    net
 }
 
 // New returns a new Config struct
@@ -27,6 +32,9 @@ func New() *Config {
 			YAUSER: getEnv("YAUSER", ""),
 			CALPWD: getEnv("CALPWD", ""),
 			YACAL:  getEnv("YACAL", ""),
+		},
+		Net: net{
+			Timeout: time.Millisecond * 10000,
 		},
 	}
 }
