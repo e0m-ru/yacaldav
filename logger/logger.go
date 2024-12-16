@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -60,5 +61,11 @@ func (l *Logger) Error(err error) {
 	if err != nil {
 		// l.logger.Printf("ERROR: %s\n", err)
 		panic(err)
+	}
+}
+
+func (l *Logger) Print(msg string) {
+	if l.level <= INFO {
+		fmt.Printf("%s\n", msg)
 	}
 }

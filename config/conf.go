@@ -34,7 +34,7 @@ func New() *Config {
 			YACAL:  getEnv("YACAL", ""),
 		},
 		Net: net{
-			Timeout: time.Millisecond * 10000,
+			Timeout: time.Millisecond * 3000,
 		},
 	}
 }
