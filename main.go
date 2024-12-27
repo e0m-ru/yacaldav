@@ -1,48 +1,40 @@
 package main
 
 import (
-	"encoding/xml"
+	"context"
 	"fmt"
-	"time"
 
 	. "github.com/e0m-ru/yacaldav/client"
 
+	"github.com/emersion/go-webdav"
 	"github.com/emersion/go-webdav/caldav"
 )
 
 func main() {
 
 	// Инициализация временных диапазонов
-	startTime, _ := time.Parse(time.RFC3339, "2024-01-04T00:00:00Z")
-	endTime, _ := time.Parse(time.RFC3339, "2024-12-05T00:00:00Z")
+	// startTime, _ := time.Parse(time.RFC3339, "2024-01-04T00:00:00Z")
+	// endTime, _ := time.Parse(time.RFC3339, "2024-12-05T00:00:00Z")
 
-	// Создание структуры запроса
-	query := caldav.CalendarQuery{
-		CompRequest: caldav.CalendarCompRequest{
-			Name:  "VCALENDAR",
-			Props: []string{"D:getetag", "C:calendar-data"},
-			Comps: []caldav.CalendarCompRequest{
-				{
-					Name:  "VEVENT",
-					Props: []string{"D:getetag"},
-				},
-			},
-		},
+	// Создаем простейший запрос CalendarQuery.
+	query := &caldav.CalendarQuery{
+		CompRequest: caldav.CalendarCompRequest{},
 		CompFilter: caldav.CompFilter{
-			Name:  "VCALENDAR",
-			Start: startTime,
-			End:   endTime,
+			Name: "VEVENT",
 		},
 	}
-	xmlBytes, err := xml.MarshalIndent(query, "", "  ")
-	L.Error(err)
-	fmt.Printf("%v\n", string(xmlBytes))
-	
+
 	// ---------------CLIENT---------------
-	// c := webdav.HTTPClientWithBasicAuth(nil, C.YaAuth.YAUSER, C.YaAuth.CALPWD)
-	// client, err := caldav.NewClient(c, C.YaAuth.YACAL)
-	// L.Error(err)
-	// ctx := context.Background()
+	c := webdav.HTTPClientWithBasicAuth(nil, C.YaAuth.YAUSER, C.YaAuth.CALPWD)
+	client, err := caldav.NewClient(c, C.YaAuth.YACAL)
+	L.Error(err)
+	ctx := context.Background()
+
+	fmt.Printf("query: %v\n", query)
+	// var dd caldav.CalendarMultiGet
+	aa, err := client.QueryCalendar(ctx, "/calendars/e0m.ru@ya.ru/", query)
+	L.Error(err)
+	fmt.Printf("%v\n", aa)
 
 	// principal, err := client.FindCurrentUserPrincipal(ctx)
 	// L.Error(err)
@@ -53,15 +45,6 @@ func main() {
 	// calendars, err := client.FindCalendars(ctx, HomeSet)
 	// L.Error(err)
 	// fmt.Printf("%v\n", calendars)
-
-	// var ccr = caldav.CalendarCompRequest{}
-	// var cf = caldav.CompFilter{Name: "VEVENT"}
-	// var cq = caldav.CalendarQuery{CompRequest: ccr, CompFilter: cf}
-	// fmt.Printf("%v\n", cq)
-
-	// aa, err := client.QueryCalendar(ctx, "/calendars/e0m.ru@ya.ru/", &query)
-	// L.Error(err)
-	// fmt.Printf("%v\n", aa)
 
 	// var wg sync.WaitGroup
 	// for _, calendar := range calendars {

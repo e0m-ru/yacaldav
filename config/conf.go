@@ -11,6 +11,7 @@ type yacaldavConfig struct {
 	YAUSER string
 	CALPWD string
 	YACAL  string
+	DAVPWD string
 }
 
 type net struct {
@@ -32,9 +33,10 @@ func New() *Config {
 			YAUSER: getEnv("YAUSER", ""),
 			CALPWD: getEnv("CALPWD", ""),
 			YACAL:  getEnv("YACAL", ""),
+			DAVPWD: getEnv("DAVPWD", ""),
 		},
 		Net: net{
-			Timeout: time.Millisecond * 3000,
+			Timeout: time.Millisecond * 100000,
 		},
 	}
 }
