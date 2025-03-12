@@ -22,7 +22,7 @@ type Config struct {
 }
 
 // New returns a new Config struct
-func New() *Config {
+func LoadConifg() *Config {
 	// loads values from .env into the system
 	if err := godotenv.Load(); err != nil {
 		panic("No .env file found")

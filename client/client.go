@@ -9,12 +9,15 @@ import (
 	"github.com/emersion/go-webdav/caldav"
 )
 
-var L *logger.Logger
-var C *config.Config
+var (
+	L   *logger.Logger
+	C   *config.Config
+	ctx = context.Background()
+)
 
 func init() {
-	L, _ = logger.NewLogger(logger.DEBUG, "")
-	C = config.New()
+	L = logger.NewLogger(logger.DEBUG, "")
+	C = config.LoadConifg()
 }
 
 func NewClient() (client *caldav.Client, err error) {
@@ -25,7 +28,6 @@ func NewClient() (client *caldav.Client, err error) {
 }
 
 func CalendarsSet(client *caldav.Client) *[]caldav.Calendar {
-	ctx := context.Background()
 	principal, err := client.FindCurrentUserPrincipal(ctx)
 	L.Error(err)
 

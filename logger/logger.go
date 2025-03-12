@@ -23,14 +23,14 @@ type Logger struct {
 }
 
 // Конструктор логгера
-func NewLogger(level LogLevel, output string) (*Logger, error) {
+func NewLogger(level LogLevel, output string) *Logger {
 	var writer *os.File
 	var err error
 
 	if strings.ToLower(output) == "file" {
 		writer, err = os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
 	} else {
 		writer = os.Stdout
@@ -39,7 +39,7 @@ func NewLogger(level LogLevel, output string) (*Logger, error) {
 	return &Logger{
 		level:  level,
 		logger: log.New(writer, "", log.LstdFlags),
-	}, nil
+	}
 }
 
 // Метод для логирования информации
