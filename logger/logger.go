@@ -59,7 +59,7 @@ func (l *Logger) Warn(msg string) {
 // Метод для логирования ошибок
 func (l *Logger) Error(err error) {
 	if err != nil {
-		// l.logger.Printf("ERROR: %s\n", err)
+		l.logger.Printf("ERROR: %s\n", err)
 		panic(err)
 	}
 }
@@ -67,5 +67,10 @@ func (l *Logger) Error(err error) {
 func (l *Logger) Print(msg string) {
 	if l.level <= INFO {
 		fmt.Printf("%s\n", msg)
+	}
+}
+func (l *Logger) Printf(tmp string, v ...any) {
+	if l.level <= INFO {
+		l.logger.Printf(tmp, v...)
 	}
 }

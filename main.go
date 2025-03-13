@@ -2,68 +2,35 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/e0m-ru/yacaldav/config"
 	"github.com/e0m-ru/yacaldav/logger"
-	"github.com/emersion/go-webdav"
-	"github.com/emersion/go-webdav/caldav"
+	"github.com/e0m-ru/yacaldav/webDavClient"
+)
+
+const (
+	DateTime = "2006-01-02"
 )
 
 var (
-	L        = logger.NewLogger(logger.DEBUG, "")
-	C        = config.LoadConifg()
-	ctx      = context.Background()
-	tl       = "2006-01-02"
-	month, _ = time.Parse(tl, "2025-02-01")
+	L                = logger.NewLogger(logger.DEBUG, "file")
+	C                = config.LoadConifg()
+	ctx              = context.Background()
+	dateFormatString = "2006-01-02"
 )
 
 func main() {
 
-	client, err := caldav.NewClient(
-		webdav.HTTPClientWithBasicAuth(nil, C.YaAuth.YAUSER, C.YaAuth.CALPWD),
-		C.YaAuth.YACAL)
+	client := webDavClient.NewCalDavClient()
+	month, err := time.Parse(dateFormatString, "2025-03-01")
+	c, err := client.QueryCalendar(ctx, "/calendars/e0m.ru@ya.ru/events-29358211/", webDavClient.BuildMonthRangeQuery(month))
 	L.Error(err)
+	webDavClient.PrintData(c)
 
-	compFilter := caldav.CompFilter{
-		Name: "VCALENDAR",
-		Comps: []caldav.CompFilter{{
-			Name:  "VEVENT",
-			Start: month,
-			End:   month.AddDate(0, 1, 0)}},
-	}
-	query := caldav.CalendarQuery{
-		CompFilter: compFilter,
-	}
-	calendars := getCalendars(client, C.YaAuth.YAUSER, C.YaAuth.CALPWD)
+	ev := webDavClient.NewEvent("Название", "Описание", "114", time.Now(), time.Now().Add(time.Hour))
+	client.PutCalendarObject(ctx, "/calendars/e0m.ru@ya.ru/events-29358211/assa.ics", ev)
 
-	for _, c := range calendars {
-		fmt.Printf("-------------%s-------------\n", c.Name)
-		extractDtat(client, query, c.Path)
-	}
+	// MonthReport(client)
 
-}
-
-func extractDtat(client *caldav.Client, query caldav.CalendarQuery, calendarUrl string) {
-	wdfi, err := client.QueryCalendar(ctx, calendarUrl, &query)
-	L.Error(err)
-	for _, c := range wdfi {
-		fmt.Printf("%s %s\n", c.Data.Events()[0].Component.Props.Get("DTSTART").Value, c.Data.Events()[0].Component.Props.Get("SUMMARY").Value)
-	}
-}
-
-func getCalendars(client *caldav.Client, yaUser, yaPwd string) []caldav.Calendar {
-	principal, err := client.FindCurrentUserPrincipal(ctx)
-	L.Error(err)
-	fmt.Printf("principal: %s\n", principal)
-
-	homeset, err := client.FindCalendarHomeSet(ctx, principal)
-	L.Error(err)
-	fmt.Printf("  homeset: %s\n", homeset)
-
-	calendars, err := client.FindCalendars(ctx, homeset)
-	L.Error(err)
-	fmt.Printf("calendars: \n")
-	return calendars
 }
