@@ -13,6 +13,7 @@ type yacaldavConfig struct {
 	YAUSER string
 	CALPWD string
 	YACAL  string
+	DAVPWD string
 }
 
 type net struct {
