@@ -1,7 +1,9 @@
 package config
 
 import (
+	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -16,9 +18,17 @@ type yacaldavConfig struct {
 type net struct {
 	Timeout time.Duration
 }
+
+type logConfig struct {
+	File  string
+	Level int
+}
+
 type Config struct {
-	YaAuth yacaldavConfig
-	Net    net
+	ProductID string
+	YaAuth    yacaldavConfig
+	Net       net
+	Logging   logConfig
 }
 
 // New returns a new Config struct
@@ -27,14 +37,24 @@ func LoadConifg() *Config {
 	if err := godotenv.Load(); err != nil {
 		panic("No .env file found")
 	}
+	portStr := getEnv("LOGLEVEL", "0")
+	loglevel, err := strconv.Atoi(portStr)
+	if err != nil {
+		log.Fatalf("Error converting LOGLEVEL to integer: %v", err)
+	}
 	return &Config{
 		YaAuth: yacaldavConfig{
-			YAUSER: getEnv("YAUSER", ""),
-			CALPWD: getEnv("CALPWD", ""),
-			YACAL:  getEnv("YACAL", ""),
+			YAUSER: getEnv("YAUSER", "user@yandex.ru"),
+			CALPWD: getEnv("CALPWD", "PA$$w0rD"),
+			YACAL:  getEnv("YACAL", "https://caldav.yandex.ru"),
 		},
 		Net: net{
 			Timeout: time.Millisecond * 3000,
+		},
+		ProductID: getEnv("ProductID", "ProductID"),
+		Logging: logConfig{
+			File:  getEnv("LOGFILE", "app.log"),
+			Level: loglevel,
 		},
 	}
 }

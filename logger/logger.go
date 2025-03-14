@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -19,7 +18,7 @@ const (
 // Логгер
 type Logger struct {
 	level  LogLevel
-	logger *log.Logger
+	Logger *log.Logger
 }
 
 // Конструктор логгера
@@ -27,8 +26,8 @@ func NewLogger(level LogLevel, output string) *Logger {
 	var writer *os.File
 	var err error
 
-	if strings.ToLower(output) == "file" {
-		writer, err = os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if strings.ToLower(output) != "stdout" {
+		writer, err = os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
 			panic(err)
 		}
@@ -38,39 +37,39 @@ func NewLogger(level LogLevel, output string) *Logger {
 
 	return &Logger{
 		level:  level,
-		logger: log.New(writer, "", log.LstdFlags),
+		Logger: log.New(writer, "", log.LstdFlags),
 	}
 }
 
 // Метод для логирования информации
 func (l *Logger) Info(msg string) {
 	if l.level <= INFO {
-		l.logger.Printf("INFO: %s\n", msg)
+		l.Logger.Printf("INFO: %s\n", msg)
 	}
 }
 
 // Метод для логирования предупреждений
 func (l *Logger) Warn(msg string) {
 	if l.level <= WARN {
-		l.logger.Printf("WARN: %s\n", msg)
+		l.Logger.Printf("WARN: %s\n", msg)
 	}
 }
 
 // Метод для логирования ошибок
 func (l *Logger) Error(err error) {
 	if err != nil {
-		l.logger.Printf("ERROR: %s\n", err)
+		l.Logger.Printf("ERROR: %s\n", err)
 		panic(err)
 	}
 }
 
 func (l *Logger) Print(msg string) {
 	if l.level <= INFO {
-		fmt.Printf("%s\n", msg)
+		l.Logger.Printf("%s\n", msg)
 	}
 }
 func (l *Logger) Printf(tmp string, v ...any) {
 	if l.level <= INFO {
-		l.logger.Printf(tmp, v...)
+		l.Logger.Printf(tmp, v...)
 	}
 }

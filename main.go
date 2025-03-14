@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	calDavClient "github.com/e0m-ru/yacaldav/calDavClient"
 	"github.com/e0m-ru/yacaldav/config"
 	"github.com/e0m-ru/yacaldav/logger"
-	"github.com/e0m-ru/yacaldav/webDavClient"
+	"github.com/e0m-ru/yacaldav/report"
+	"github.com/emersion/go-webdav/caldav"
 )
 
 const (
@@ -14,23 +17,43 @@ const (
 )
 
 var (
-	L                = logger.NewLogger(logger.DEBUG, "file")
 	C                = config.LoadConifg()
-	ctx              = context.Background()
+	L                = logger.NewLogger(logger.LogLevel(C.Logging.Level), C.Logging.File)
 	dateFormatString = "2006-01-02"
 )
 
 func main() {
-
-	client := webDavClient.NewCalDavClient()
-	month, err := time.Parse(dateFormatString, "2025-03-01")
-	c, err := client.QueryCalendar(ctx, "/calendars/e0m.ru@ya.ru/events-29358211/", webDavClient.BuildMonthRangeQuery(month))
+	client, err := calDavClient.NewCalDavClient()
 	L.Error(err)
-	webDavClient.PrintData(c)
+	// ctx := context.Background()
 
-	ev := webDavClient.NewEvent("Название", "Описание", "114", time.Now(), time.Now().Add(time.Hour))
-	client.PutCalendarObject(ctx, "/calendars/e0m.ru@ya.ru/events-29358211/assa.ics", ev)
+	// month, err := time.Parse(dateFormatString, "2025-03-01")
+	// L.Error(err)
 
-	// MonthReport(client)
+	// c, err := client.QueryCalendar(ctx, "/calendars/e0m.ru@ya.ru/events-29358211/", calDavClient.BuildMonthRangeQuery(month))
+	// L.Error(err)
 
+	// report.PrintAllCalendarsData(c)
+
+	// ev := calDavClient.NewEvent("Название", "Описание", "114", time.Now(), time.Now().Add(time.Hour))
+	// cal := calDavClient.NewCalendar(ev)
+	// client.PutCalendarObject(ctx, "/calendars/e0m.ru@ya.ru/events-29358211/assa.ics", cal)
+
+	MonthReport(client, 3)
+}
+
+func MonthReport(client *caldav.Client, month time.Month) {
+	ctx := context.Background()
+	now := time.Now()
+	year := now.Year()
+	date := time.Date(year, month, 1, 0, 0, 0, 0, time.Local)
+	lst, err := calDavClient.GetCalendarsList(client)
+	L.Error(err)
+	for _, calendar := range lst {
+		fmt.Fprintf(L.Logger.Writer(), ">>>>>>>>> %v\n  <<<<<<<<<<<<", calendar.Name)
+		claList, err := client.QueryCalendar(ctx, calendar.Path, calDavClient.BuildMonthRangeQuery(date))
+		L.Error(err)
+		report.PrintAllCalendarsData(L.Logger.Writer(), claList)
+		fmt.Fprintf(L.Logger.Writer(), " =========================\n\n")
+	}
 }
