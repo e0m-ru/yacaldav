@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/e0m-ru/yacaldav"
 	"github.com/e0m-ru/yacaldav/config"
 	"github.com/e0m-ru/yacaldav/logger"
 	"github.com/e0m-ru/yacaldav/report"
@@ -21,8 +20,8 @@ var (
 	L = logger.NewLogger(logger.LogLevel(C.Logging.Level), C.Logging.File)
 )
 
-func main() {
-	client, err := yacaldav.Newyacaldav(C.YaAuth.YAUSER, C.YaAuth.CALPWD, C.YaAuth.YACAL)
+func main_temp() {
+	client, err := NewCalDavClient(C.YaAuth.YAUSER, C.YaAuth.CALPWD, C.YaAuth.YACAL)
 	L.Error(err)
 	// ctx := context.Background()
 
@@ -46,11 +45,11 @@ func MonthReport(client *caldav.Client, month time.Month) {
 	now := time.Now()
 	year := now.Year()
 	date := time.Date(year, month, 1, 0, 0, 0, 0, time.Local)
-	lst, err := yacaldav.GetCalendarsList(client)
+	lst, err := GetCalendarsList(client)
 	L.Error(err)
 	for _, calendar := range lst {
 		fmt.Fprintf(L.Logger.Writer(), ">>>>>>>>> %v\n  <<<<<<<<<<<<", calendar.Name)
-		claList, err := client.QueryCalendar(ctx, calendar.Path, yacaldav.BuildMonthRangeQuery(date))
+		claList, err := client.QueryCalendar(ctx, calendar.Path, BuildMonthRangeQuery(date))
 		L.Error(err)
 		report.PrintAllCalendarsData(L.Logger.Writer(), claList)
 		fmt.Fprintf(L.Logger.Writer(), " =========================\n\n")
