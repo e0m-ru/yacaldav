@@ -6,7 +6,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/e0m-ru/yacaldav/config"
 	"github.com/emersion/go-ical"
 	"github.com/emersion/go-webdav"
 	"github.com/emersion/go-webdav/caldav"
@@ -14,16 +13,12 @@ import (
 )
 
 var (
-	C                = config.LoadConifg() //Config
 	dateFormatString = "2006-01-02"
 )
 
-func NewCalDavClient() (*caldav.Client, error) {
-	client, err := caldav.NewClient(
-		webdav.HTTPClientWithBasicAuth(nil,
-			C.YaAuth.YAUSER,
-			C.YaAuth.CALPWD),
-		C.YaAuth.YACAL)
+func NewCalDavClient(user, pwd, url string) (*caldav.Client, error) {
+	c := webdav.HTTPClientWithBasicAuth(nil, user, pwd)
+	client, err := caldav.NewClient(c, url)
 	if err != nil {
 		return client, err
 	}
@@ -88,7 +83,7 @@ func NewEvent(summ, desc, loc string, st, et time.Time) *ical.Event {
 func NewCalendar(event *ical.Event) *ical.Calendar {
 	cal := ical.NewCalendar()
 	cal.Props.SetText(ical.PropVersion, "2.0")
-	cal.Props.SetText(ical.PropProductID, C.ProductID)
+	cal.Props.SetText(ical.PropProductID, "ittsc 2025")
 	cal.Children = append(cal.Children, event.Component)
 	var buf bytes.Buffer
 	if err := ical.NewEncoder(&buf).Encode(cal); err != nil {

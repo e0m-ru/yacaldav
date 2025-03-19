@@ -23,7 +23,7 @@ var (
 )
 
 func main() {
-	client, err := calDavClient.NewCalDavClient()
+	client, err := calDavClient.NewCalDavClient(C.YaAuth.YAUSER, C.YaAuth.CALPWD, C.YaAuth.YACAL)
 	L.Error(err)
 	// ctx := context.Background()
 
