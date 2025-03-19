@@ -1,4 +1,4 @@
-package calDavClient
+package client
 
 import (
 	"bytes"
