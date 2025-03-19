@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	calDavClient "github.com/e0m-ru/yacaldav/calDavClient"
+	calDavClient "github.com/e0m-ru/yacaldav/client"
 	"github.com/e0m-ru/yacaldav/config"
 	"github.com/e0m-ru/yacaldav/logger"
 	"github.com/e0m-ru/yacaldav/report"
