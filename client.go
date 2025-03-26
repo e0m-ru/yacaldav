@@ -20,9 +20,9 @@ func NewCalDavClient(user, pwd, url string) (*caldav.Client, error) {
 	c := webdav.HTTPClientWithBasicAuth(nil, user, pwd)
 	client, err := caldav.NewClient(c, url)
 	if err != nil {
-		return client, err
+		return &client, err
 	}
-	return client, err
+	return &client, err
 }
 
 func GetCalendarsList(client *caldav.Client) (calendars []caldav.Calendar, err error) {
